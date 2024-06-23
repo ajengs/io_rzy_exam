@@ -25,7 +25,11 @@ create_transactions = fn data ->
 end
 
 with {:ok, account_data} <- Razoyo.create_account(),
-     {:ok, account} <- Accounts.create_account(account_data),
+     {:ok, initial_account} <- Accounts.create_account(account_data),
+     {:ok, %{"account" => state}} <- Razoyo.get_account(initial_account),
+     {:ok, %{"routing_number" => routing}} <- Razoyo.get_routing(initial_account),
+     {:ok, account} <-
+       Accounts.update_account(initial_account, Map.merge(state, %{"routing" => routing})),
      {:ok, %{"transactions" => transaction_data}} <-
        Razoyo.list_transactions(account.access_token) do
   create_transactions.(transaction_data)

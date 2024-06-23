@@ -5,7 +5,7 @@ defmodule IoRzyExam.Repo.Migrations.CreateAccounts do
     create table(:accounts) do
       add :account, :string
       add :access_token, :string
-      add :status, :boolean, default: false, null: false
+      add :status, :boolean, default: true, null: false
       add :state, :string
       add :routing, :string
 

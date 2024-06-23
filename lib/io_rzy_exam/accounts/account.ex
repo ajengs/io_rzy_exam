@@ -3,7 +3,7 @@ defmodule IoRzyExam.Accounts.Account do
   import Ecto.Changeset
 
   schema "accounts" do
-    field :status, :boolean, default: false
+    field :status, :boolean, default: true
     field :state, :string
     field :account, :string
     field :access_token, :string
