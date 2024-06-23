@@ -3,7 +3,7 @@ defmodule IoRzyExamWeb.AccountControllerTest do
 
   describe "index" do
     test "lists all transactions", %{conn: conn} do
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/transactions")
       assert html_response(conn, 200) =~ "Account Transactions"
     end
   end
