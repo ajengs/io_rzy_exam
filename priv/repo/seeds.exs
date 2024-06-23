@@ -19,11 +19,8 @@ Repo.delete_all(Transaction)
 Repo.delete_all(Account)
 
 create_transactions = fn account_id, data ->
-  require IEx
-  IEx.pry()
-
-  Enum.map(data, fn v ->
-    v
+  Enum.map(data, fn transaction ->
+    transaction
     |> Map.put("account_id", account_id)
     |> Transactions.create_transaction()
   end)

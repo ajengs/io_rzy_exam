@@ -36,6 +36,7 @@ defmodule IoRzyExam.Accounts do
 
   """
   def get_account!(id), do: Repo.get!(Account, id)
+  def get_by_account_id!(account), do: Repo.get_by!(Account, account: account)
 
   @doc """
   Creates a account.

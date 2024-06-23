@@ -19,6 +19,11 @@ defmodule IoRzyExam.AccountsTest do
       assert Accounts.get_account!(account.id) == account
     end
 
+    test "get_by_account_id!/1 returns the account with given acccount id" do
+      account = account_fixture()
+      assert Accounts.get_by_account_id!(account.account) == account
+    end
+
     test "create_account/1 with valid data creates a account" do
       valid_attrs = %{
         status: true,
