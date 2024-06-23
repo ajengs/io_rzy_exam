@@ -12,7 +12,7 @@ defmodule IoRzyExam.Client.Razoyo do
     )
   end
 
-  def list_transactions do
+  def list_transactions(access_token) do
     request_body = %{
       "type" => "ListTransactions"
     }
@@ -20,12 +20,8 @@ defmodule IoRzyExam.Client.Razoyo do
     HttpClient.post(
       host_url() <> "/operations",
       Jason.encode!(request_body),
-      [{"Authorization", "Bearer " <> access_token()}]
+      [{"Authorization", "Bearer " <> access_token}]
     )
-  end
-
-  defp access_token do
-    Application.get_env(:io_rzy_exam, :razoyo) |> Keyword.get(:access_token)
   end
 
   defp client_secret do

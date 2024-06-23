@@ -34,10 +34,7 @@ config :io_rzy_exam, IoRzyExam.Mailer, adapter: Swoosh.Adapters.Local
 
 config :io_rzy_exam, :razoyo,
   host_url: "https://exam.razoyo.com/api/banking",
-  client_secret: "qRIAKP5ywR5i6sGcv3dFbYDEKoUmV5V5",
-  account: "1719159858114201-4261",
-  access_token:
-    "SFMyNTY.g2gDbQAAABUxNzE5MTU5ODU4MTE0MjAxLTQyNjFuBgARpOlFkAFiAAFRgA.iWXRKGBiPfdQcLhe0RXQK2eYPOBvK3DjcAV-V4iSNKY"
+  client_secret: "qRIAKP5ywR5i6sGcv3dFbYDEKoUmV5V5"
 
 # Configure esbuild (the version is required)
 config :esbuild,

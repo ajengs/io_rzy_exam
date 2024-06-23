@@ -1,7 +1,10 @@
 defmodule IoRzyExam.HttpClient do
+  require Logger
   @headers [{"Content-Type", "application/json"}]
 
   def post(url, body, headers \\ []) do
+    Logger.debug("Sending request to #{url} #{inspect(body)}")
+
     url
     |> http_client().post(body, headers ++ @headers)
     |> process_response_body()

@@ -8,6 +8,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
   setup :verify_on_exit!
 
   @headers [{"Content-Type", "application/json"}]
+  @access_token "access-token"
 
   describe "create_account" do
     test "should pass a proper arguments and return correct response" do
@@ -46,7 +47,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
     end
   end
 
-  describe "list_transactions" do
+  describe "list_transactions/1" do
     test "should pass a proper arguments and return correct response" do
       payload = %{"type" => "ListTransactions"} |> Jason.encode!()
       headers = [{"Authorization", "Bearer access-token"}] ++ @headers
@@ -66,7 +67,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.list_transactions()
+      assert {:ok, resp_body} == Razoyo.list_transactions(@access_token)
     end
 
     test "should return error with html code on failed request" do
@@ -78,7 +79,8 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 403, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:error, %{body: resp_body, status_code: 403}} == Razoyo.list_transactions()
+      assert {:error, %{body: resp_body, status_code: 403}} ==
+               Razoyo.list_transactions(@access_token)
     end
 
     test "should return error on failed request" do
@@ -86,7 +88,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
       expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
 
-      assert Razoyo.list_transactions() == resp_body
+      assert Razoyo.list_transactions(@access_token) == resp_body
     end
   end
 end

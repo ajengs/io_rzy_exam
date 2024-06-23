@@ -16,6 +16,6 @@ defmodule IoRzyExam.Accounts.Account do
   def changeset(account, attrs) do
     account
     |> cast(attrs, [:account, :access_token, :status, :state, :routing])
-    |> validate_required([:account, :access_token, :status, :state, :routing])
+    |> validate_required([:account, :access_token, :status])
   end
 end

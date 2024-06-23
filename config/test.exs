@@ -25,9 +25,7 @@ config :io_rzy_exam, IoRzyExamWeb.Endpoint,
 
 config :io_rzy_exam, :razoyo,
   host_url: "localhost",
-  client_secret: "client-secret",
-  account: "account-number",
-  access_token: "access-token"
+  client_secret: "client-secret"
 
 # In test we don't send emails.
 config :io_rzy_exam, IoRzyExam.Mailer, adapter: Swoosh.Adapters.Test
