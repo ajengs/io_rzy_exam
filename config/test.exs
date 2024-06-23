@@ -25,7 +25,8 @@ config :io_rzy_exam, IoRzyExamWeb.Endpoint,
 
 config :io_rzy_exam, :razoyo,
   host_url: "localhost",
-  account: "1719157789399808-9149",
+  client_secret: "client-secret",
+  account: "account-number",
   access_token: "access-token"
 
 # In test we don't send emails.

@@ -9,45 +9,84 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
   @headers [{"Content-Type", "application/json"}]
 
-  test "should pass a proper arguments and return correct response" do
-    payload = %{"type" => "ListTransactions"} |> Jason.encode!()
-    headers = [{"Authorization", "Bearer access-token"}] ++ @headers
+  describe "create_account" do
+    test "should pass a proper arguments and return correct response" do
+      payload = %{"client_secret" => "client-secret"} |> Jason.encode!()
 
-    resp_body = %{
-      "transactions" => [
-        %{
-          "time" => "2024-06-15T07:30:00Z",
-          "amount" => 100.00,
-          "account" => "account-number",
-          "company" => "company name"
-        }
-      ]
-    }
+      resp_body = %{
+        "account" => "account-number",
+        "access_token" => "access-token"
+      }
 
-    expect(HTTPMock, :post, fn "localhost/operations", ^payload, ^headers ->
-      {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
-    end)
+      expect(HTTPMock, :post, fn "localhost/accounts", ^payload, @headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
 
-    assert {:ok, resp_body} == Razoyo.list_transactions()
+      assert {:ok, resp_body} == Razoyo.create_account()
+    end
+
+    test "should return error with html code on failed request" do
+      resp_body = %{
+        "error" => "forbidden"
+      }
+
+      expect(HTTPMock, :post, fn "localhost/accounts", _, _ ->
+        {:ok, %HTTPoison.Response{status_code: 403, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:error, %{body: resp_body, status_code: 403}} == Razoyo.create_account()
+    end
+
+    test "should return error on failed request" do
+      resp_body = {:error, :nxdomain}
+
+      expect(HTTPMock, :post, fn "localhost/accounts", _, _ -> resp_body end)
+
+      assert Razoyo.create_account() == resp_body
+    end
   end
 
-  test "should return error with html code on failed request" do
-    resp_body = %{
-      "error" => "forbidden"
-    }
+  describe "list_transactions" do
+    test "should pass a proper arguments and return correct response" do
+      payload = %{"type" => "ListTransactions"} |> Jason.encode!()
+      headers = [{"Authorization", "Bearer access-token"}] ++ @headers
 
-    expect(HTTPMock, :post, fn "localhost/operations", _, _ ->
-      {:ok, %HTTPoison.Response{status_code: 403, body: Jason.encode!(resp_body)}}
-    end)
+      resp_body = %{
+        "transactions" => [
+          %{
+            "time" => "2024-06-15T07:30:00Z",
+            "amount" => 100.00,
+            "account" => "account-number",
+            "company" => "company name"
+          }
+        ]
+      }
 
-    assert {:error, %{body: resp_body, status_code: 403}} == Razoyo.list_transactions()
-  end
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, ^headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
 
-  test "should return error on failed request" do
-    resp_body = {:error, :nxdomain}
+      assert {:ok, resp_body} == Razoyo.list_transactions()
+    end
 
-    expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
+    test "should return error with html code on failed request" do
+      resp_body = %{
+        "error" => "forbidden"
+      }
 
-    assert Razoyo.list_transactions() == resp_body
+      expect(HTTPMock, :post, fn "localhost/operations", _, _ ->
+        {:ok, %HTTPoison.Response{status_code: 403, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:error, %{body: resp_body, status_code: 403}} == Razoyo.list_transactions()
+    end
+
+    test "should return error on failed request" do
+      resp_body = {:error, :nxdomain}
+
+      expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
+
+      assert Razoyo.list_transactions() == resp_body
+    end
   end
 end
