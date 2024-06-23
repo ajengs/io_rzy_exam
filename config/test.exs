@@ -5,6 +5,9 @@ import Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
+config :io_rzy_exam,
+  http_client: HTTPMock
+
 config :io_rzy_exam, IoRzyExam.Repo,
   username: "postgres",
   password: "postgres",

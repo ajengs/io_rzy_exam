@@ -9,7 +9,8 @@ import Config
 
 config :io_rzy_exam,
   ecto_repos: [IoRzyExam.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  http_client: HTTPoison
 
 # Configures the endpoint
 config :io_rzy_exam, IoRzyExamWeb.Endpoint,
