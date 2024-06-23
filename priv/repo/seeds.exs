@@ -18,9 +18,14 @@ alias IoRzyExam.Transactions.Transaction
 Repo.delete_all(Transaction)
 Repo.delete_all(Account)
 
-create_transactions = fn data ->
+create_transactions = fn account_id, data ->
+  require IEx
+  IEx.pry()
+
   Enum.map(data, fn v ->
-    Transactions.create_transaction(v)
+    v
+    |> Map.put("account_id", account_id)
+    |> Transactions.create_transaction()
   end)
 end
 
@@ -32,7 +37,7 @@ with {:ok, account_data} <- Razoyo.create_account(),
      {:ok, account} <- Accounts.update_account(account_state, %{"routing" => routing}),
      {:ok, %{"transactions" => transaction_data}} <-
        Razoyo.list_transactions(account.access_token) do
-  create_transactions.(transaction_data)
+  create_transactions.(account.account, transaction_data)
   IO.puts("SUCCESS: " <> inspect(account))
 else
   err -> IO.puts("ERROR: " <> inspect(err))
