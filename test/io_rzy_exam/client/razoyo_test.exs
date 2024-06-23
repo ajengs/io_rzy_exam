@@ -14,7 +14,12 @@ defmodule IoRzyExam.Client.RazoyoTest do
   @account %IoRzyExam.Accounts.Account{
     account: "account-number",
     state: "state",
-    access_token: @access_token
+    access_token: @access_token,
+    routing: "routing-code"
+  }
+  @transaction %IoRzyExam.Transactions.Transaction{
+    account: "trx-account",
+    secret: "secret"
   }
 
   describe "create_account" do
@@ -134,6 +139,53 @@ defmodule IoRzyExam.Client.RazoyoTest do
       end)
 
       assert {:ok, resp_body} == Razoyo.get_routing(@account)
+    end
+  end
+
+  describe "authorize/2" do
+    test "should pass a proper arguments and return correct response" do
+      payload =
+        %{
+          "type" => "Authorize",
+          "routing" => @account.routing,
+          "account" => @transaction.account,
+          "secret" => @transaction.secret
+        }
+        |> Jason.encode!()
+
+      resp_body = %{
+        "token" => "authorized-token",
+        "total" => 100.00,
+        "error" => nil
+      }
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:ok, resp_body} == Razoyo.authorize(@account, @transaction)
+    end
+
+    test "should return error when error message not nil" do
+      payload =
+        %{
+          "type" => "Authorize",
+          "routing" => @account.routing,
+          "account" => @transaction.account,
+          "secret" => @transaction.secret
+        }
+        |> Jason.encode!()
+
+      resp_body = %{
+        "error" => "routing number invalid",
+        "checks" => []
+      }
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:error, resp_body} == Razoyo.authorize(@account, @transaction)
     end
   end
 end

@@ -50,6 +50,27 @@ defmodule IoRzyExam.Client.Razoyo do
     )
   end
 
+  def authorize(account, transaction) do
+    request_body = %{
+      "type" => "Authorize",
+      "routing" => account.routing,
+      "account" => transaction.account,
+      "secret" => transaction.secret
+    }
+
+    res =
+      HttpClient.post(
+        host_url() <> "/operations",
+        Jason.encode!(request_body),
+        [{"Authorization", "Bearer " <> account.access_token}]
+      )
+
+    case res do
+      {:ok, %{"error" => error_message} = error} when not is_nil(error_message) -> {:error, error}
+      _ -> res
+    end
+  end
+
   defp client_secret do
     Application.get_env(:io_rzy_exam, :razoyo) |> Keyword.get(:client_secret)
   end
