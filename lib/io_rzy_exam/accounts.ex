@@ -6,7 +6,7 @@ defmodule IoRzyExam.Accounts do
   import Ecto.Query, warn: false
   alias IoRzyExam.Repo
 
-  alias IoRzyExam.Accounts.Model.Account
+  alias IoRzyExam.Accounts.Account
 
   @doc """
   Returns the list of accounts.

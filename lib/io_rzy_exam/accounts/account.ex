@@ -1,4 +1,4 @@
-defmodule IoRzyExam.Accounts.Model.Account do
+defmodule IoRzyExam.Accounts.Account do
   use Ecto.Schema
   import Ecto.Changeset
 

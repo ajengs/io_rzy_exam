@@ -4,11 +4,9 @@ defmodule IoRzyExam.AccountsTest do
   alias IoRzyExam.{Accounts, Repo}
   alias IoRzyExam.Accounts.Account
 
+  import IoRzyExam.AccountsFixtures
+
   describe "accounts" do
-    alias IoRzyExam.Accounts.Model.Account
-
-    import IoRzyExam.AccountsFixtures
-
     @invalid_attrs %{status: nil, state: nil, account: nil, access_token: nil, routing: nil}
 
     test "list_accounts/0 returns all accounts" do
