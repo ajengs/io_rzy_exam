@@ -1,0 +1,9 @@
+<.header>
+  Account Transactions
+</.header>
+
+<.table id="transactions" rows={@transactions}>
+  <:col :let={transaction} label="Account Number"><%= transaction.account %></:col>
+  <:col :let={transaction} label="Company"><%= transaction.company %></:col>
+  <:col :let={transaction} label="Amount"><%= transaction.amount %></:col>
+</.table>

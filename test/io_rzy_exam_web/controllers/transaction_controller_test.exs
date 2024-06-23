@@ -1,4 +1,4 @@
-defmodule IoRzyExamWeb.AccountControllerTest do
+defmodule IoRzyExamWeb.TransactionControllerTest do
   use IoRzyExamWeb.ConnCase
 
   describe "index" do

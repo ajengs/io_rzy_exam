@@ -18,7 +18,7 @@ defmodule IoRzyExamWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/transactions", AccountController, :index
+    get "/transactions", TransactionController, :index
   end
 
   # Other scopes may use custom stacks.
