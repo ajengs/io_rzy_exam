@@ -8,7 +8,14 @@ defmodule IoRzyExam.Client.RazoyoTest do
   setup :verify_on_exit!
 
   @headers [{"Content-Type", "application/json"}]
+  @account_headers [{"Authorization", "Bearer access-token"}] ++ @headers
   @access_token "access-token"
+
+  @account %IoRzyExam.Accounts.Account{
+    account: "account-number",
+    state: "state",
+    access_token: @access_token
+  }
 
   describe "create_account" do
     test "should pass a proper arguments and return correct response" do
@@ -16,7 +23,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
       resp_body = %{
         "account" => "account-number",
-        "access_token" => "access-token"
+        "access_token" => @access_token
       }
 
       expect(HTTPMock, :post, fn "localhost/accounts", ^payload, @headers ->
@@ -50,7 +57,6 @@ defmodule IoRzyExam.Client.RazoyoTest do
   describe "list_transactions/1" do
     test "should pass a proper arguments and return correct response" do
       payload = %{"type" => "ListTransactions"} |> Jason.encode!()
-      headers = [{"Authorization", "Bearer access-token"}] ++ @headers
 
       resp_body = %{
         "transactions" => [
@@ -63,7 +69,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
         ]
       }
 
-      expect(HTTPMock, :post, fn "localhost/operations", ^payload, ^headers ->
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
@@ -89,6 +95,45 @@ defmodule IoRzyExam.Client.RazoyoTest do
       expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
 
       assert Razoyo.list_transactions(@access_token) == resp_body
+    end
+  end
+
+  describe "get_account/1" do
+    test "should pass a proper arguments and return correct response" do
+      payload = %{"type" => "GetAccount", "account" => @account.account} |> Jason.encode!()
+
+      resp_body = %{
+        "account" => %{
+          "state" => "Metro Manila",
+          "hint" => "dW5hdmFpbGFibGU=",
+          "city" => "Manila",
+          "country" => "PH",
+          "account" => @account.account,
+          "company" => "(personal)"
+        }
+      }
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:ok, resp_body} == Razoyo.get_account(@account)
+    end
+  end
+
+  describe "get_routing/1" do
+    test "should pass a proper arguments and return correct response" do
+      payload = %{"type" => "GetRouting", "state" => @account.state} |> Jason.encode!()
+
+      resp_body = %{
+        "routing_number" => "routing-number"
+      }
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:ok, resp_body} == Razoyo.get_routing(@account)
     end
   end
 end

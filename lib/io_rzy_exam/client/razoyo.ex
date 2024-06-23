@@ -24,6 +24,32 @@ defmodule IoRzyExam.Client.Razoyo do
     )
   end
 
+  def get_account(account) do
+    request_body = %{
+      "type" => "GetAccount",
+      "account" => account.account
+    }
+
+    HttpClient.post(
+      host_url() <> "/operations",
+      Jason.encode!(request_body),
+      [{"Authorization", "Bearer " <> account.access_token}]
+    )
+  end
+
+  def get_routing(account) do
+    request_body = %{
+      "type" => "GetRouting",
+      "state" => account.state
+    }
+
+    HttpClient.post(
+      host_url() <> "/operations",
+      Jason.encode!(request_body),
+      [{"Authorization", "Bearer " <> account.access_token}]
+    )
+  end
+
   defp client_secret do
     Application.get_env(:io_rzy_exam, :razoyo) |> Keyword.get(:client_secret)
   end

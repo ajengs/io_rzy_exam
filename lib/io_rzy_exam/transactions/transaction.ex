@@ -7,6 +7,7 @@ defmodule IoRzyExam.Transactions.Transaction do
     field :account, :string
     field :company, :string
     field :amount, :decimal
+    field :secret, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -14,7 +15,7 @@ defmodule IoRzyExam.Transactions.Transaction do
   @doc false
   def changeset(transaction, attrs) do
     transaction
-    |> cast(attrs, [:account, :company, :amount, :time])
+    |> cast(attrs, [:account, :company, :amount, :time, :secret])
     |> validate_required([:account, :company, :amount, :time])
   end
 end
