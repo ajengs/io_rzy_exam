@@ -11,9 +11,12 @@ defmodule IoRzyExamWeb.AccountController do
     render(conn, :index, accounts: accounts)
   end
 
-  def edit(conn, params) do
+  def edit(conn, %{"id" => id}) do
+    account = Accounts.get_account!(id)
+
     check_failures()
-    |> show_edit(conn, params)
+    |> check_secret(account)
+    |> show_edit(conn, account)
   end
 
   def update(conn, %{"id" => id, "account" => account_params} = params) do
@@ -24,6 +27,7 @@ defmodule IoRzyExamWeb.AccountController do
       render(conn, :edit, account: account, changeset: %{changeset | action: :update})
     else
       check_failures()
+      |> check_secret(account)
       |> process_update(conn, params, account)
     end
   end
@@ -105,11 +109,14 @@ defmodule IoRzyExamWeb.AccountController do
     |> redirect(to: ~p"/accounts")
   end
 
-  defp show_edit(:ok, conn, %{"id" => id}) do
-    account = Accounts.get_account!(id)
+  defp show_edit(:ok, conn, account) do
     changeset = Accounts.change_account(account)
     render(conn, :edit, account: account, changeset: changeset)
   end
+
+  defp check_secret(:ok, %_{secret: secret}) when is_nil(secret), do: :ok
+  defp check_secret(:ok, _), do: {:error, "Account is already authorized!"}
+  defp check_secret(error, _), do: error
 
   defp check_failures do
     failure = Failures.within_timeframe() |> Failures.list_failures() |> Enum.count()

@@ -21,13 +21,22 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
       assert html_response(conn, 200) =~ "Update secret"
     end
 
-    test "restrict edit if failures > 3", %{conn: conn, account: account} do
+    test "cannot edit if failures > 3", %{conn: conn, account: account} do
       Enum.each(1..4, fn _ -> failure_fixture() end)
       conn = get(conn, ~p"/accounts/#{account}/edit")
       assert html_response(conn, 302)
 
       assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
                "Too many authorization failures. Try again later."
+    end
+
+    test "cannot edit if secret exists", %{conn: conn} do
+      account = account_fixture(%{account: "new account", secret: "secret"})
+      conn = get(conn, ~p"/accounts/#{account}/edit")
+      assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "Account is already authorized!"
     end
   end
 
@@ -78,13 +87,23 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
       assert html_response(conn, 200) =~ "routing number invalid"
     end
 
-    test "restrict update if failures > 3", %{conn: conn, account: account} do
+    test "cannot update if failures > 3", %{conn: conn, account: account} do
       Enum.each(1..4, fn _ -> failure_fixture() end)
       conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "secret word"})
       assert html_response(conn, 302)
 
       assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
                "Too many authorization failures. Try again later."
+    end
+
+    test "cannot update if secret exists", %{conn: conn} do
+      account = account_fixture(%{account: "new account", secret: "secret"})
+
+      conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "secret word"})
+      assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "Account is already authorized!"
     end
 
     test "renders errors when submitted data is invalid", %{conn: conn, account: account} do
