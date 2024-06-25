@@ -10,8 +10,9 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias IoRzyExam.Client.Razoyo
-alias IoRzyExam.{Accounts, Transactions}
+alias IoRzyExam.{Accounts, Failures, Transactions}
 alias IoRzyExam.Accounts.Account
+alias IoRzyExam.Failures.Failure
 alias IoRzyExam.Repo
 alias IoRzyExam.Transactions.Transaction
 
@@ -76,6 +77,7 @@ end
 
 Repo.delete_all(Transaction)
 Repo.delete_all(Account)
+Repo.delete_all(Failure)
 {:ok, account} = IoRzyExam.Seeder.create_new_account()
 IoRzyExam.Seeder.insert_transactions(account)
 IoRzyExam.Seeder.insert_trx_accounts(account.access_token)
