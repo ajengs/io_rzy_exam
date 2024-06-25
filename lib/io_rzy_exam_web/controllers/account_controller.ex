@@ -126,7 +126,12 @@ defmodule IoRzyExamWeb.AccountController do
   end
 
   defp authorize_account(account_params, account) do
-    req_body = Map.put(account_params, "type", "Authorize")
+    req_body = %{
+      "type" => "Authorize",
+      "routing" => account.routing,
+      "account" => account.account,
+      "secret" => Map.get(account_params, "secret")
+    }
 
     case Razoyo.post_operations(req_body, account.access_token) do
       {:error, error} ->

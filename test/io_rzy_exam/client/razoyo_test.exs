@@ -213,11 +213,22 @@ defmodule IoRzyExam.Client.RazoyoTest do
         ]
       }
 
+      expected_error = """
+      Letter w: exact; 
+      Letter h: exact; 
+      Letter i: exact; 
+      Letter p: none; 
+      Letter s: none; 
+      """
+
       expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:error, Map.get(resp_body, "checks") |> Jason.encode!()} ==
+      # assert {:error, Map.get(resp_body, "checks") |> Jason.encode!()} ==
+      # Razoyo.post_operations(req_body, @account.access_token)
+
+      assert {:error, expected_error} ==
                Razoyo.post_operations(req_body, @account.access_token)
     end
   end

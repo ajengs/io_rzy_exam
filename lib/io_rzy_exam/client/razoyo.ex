@@ -28,7 +28,7 @@ defmodule IoRzyExam.Client.Razoyo do
     case res do
       {:ok, %{"error" => error_message, "checks" => checks}}
       when not is_nil(error_message) and checks != [] ->
-        {:error, Jason.encode!(checks)}
+        {:error, parse_check_result(checks)}
 
       {:ok, %{"error" => error_message}} when not is_nil(error_message) ->
         {:error, error_message}
@@ -42,6 +42,13 @@ defmodule IoRzyExam.Client.Razoyo do
       _ ->
         res
     end
+  end
+
+  defp parse_check_result(checks) do
+    Enum.reduce(checks, "", fn c, acc ->
+      res = "Letter " <> Map.get(c, "letter") <> ": " <> Map.get(c, "match")
+      acc <> res <> "; \n"
+    end)
   end
 
   defp client_secret do

@@ -5,7 +5,7 @@ defmodule IoRzyExam.Accounts.Account do
   schema "accounts" do
     field :account, :string
     field :access_token, :string
-    field :status, :boolean, default: true
+    field :status, :boolean, default: false
     field :state, :string
     field :routing, :string
     field :hint, :string
