@@ -25,6 +25,9 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
       Enum.each(1..4, fn _ -> failure_fixture() end)
       conn = get(conn, ~p"/accounts/#{account}/edit")
       assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "Too many authorization failures. Try again later."
     end
   end
 
@@ -32,17 +35,30 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
     setup [:create_account]
 
     test "redirects when data is valid", %{conn: conn, account: account} do
+      payload =
+        %{
+          "account" => "some account",
+          "routing" => "some routing",
+          "secret" => "secret word",
+          "type" => "Authorize"
+        }
+        |> Jason.encode!()
+
       resp_body = %{
         "token" => "authorized-token",
         "total" => 100.00,
         "error" => nil
       }
 
-      expect(HTTPMock, :post, fn "localhost/operations", _payload, _account_headers ->
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, _account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "secret word"})
+      conn =
+        put(conn, ~p"/accounts/#{account}",
+          account: %{routing: account.routing, account: account.account, secret: "secret word"}
+        )
+
       assert redirected_to(conn) == ~p"/accounts"
 
       assert %{secret: "authorized-token"} = IoRzyExam.Accounts.get_account!(account.id)
@@ -66,6 +82,9 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
       Enum.each(1..4, fn _ -> failure_fixture() end)
       conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "secret word"})
       assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "Too many authorization failures. Try again later."
     end
 
     test "renders errors when submitted data is invalid", %{conn: conn, account: account} do
@@ -74,14 +93,44 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
     end
   end
 
+  describe "transfer" do
+    test "transfer to authorized accounts", %{conn: conn} do
+      account_fixture(%{status: false, secret: "secret", amount: "100"})
+
+      resp_body = %{
+        "total" => 100
+      }
+
+      payload =
+        %{
+          "type" => "Transfer",
+          "authorizations" => ["secret"],
+          "total" => "100.00"
+        }
+        |> Jason.encode!()
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, _account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      conn = post(conn, ~p"/transfers")
+      assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("info") ==
+               "Funds transferred successfully!"
+    end
+
+    test "transfer failed if no authorized accounts found", %{conn: conn} do
+      conn = post(conn, ~p"/transfers")
+      assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "No authorized accounts found!"
+    end
+  end
+
   defp create_account(_) do
     account = account_fixture()
     %{account: account}
   end
-
-  # defp create_account_with_account(_) do
-  #   account = account_fixture()
-  #   account = account_fixture(account)
-  #   %{account: account}
-  # end
 end

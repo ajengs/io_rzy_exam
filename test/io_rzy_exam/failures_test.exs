@@ -15,10 +15,10 @@ defmodule IoRzyExam.FailuresTest do
       assert Failures.list_failures() == [failure]
     end
 
-    test "list_failures_within_period/0 returns failures within timeframe" do
+    test "list_failures/1 returns failures given condition" do
       failure = failure_fixture()
       failure2 = failure_fixture()
-      assert Failures.list_failures_within_period() == [failure, failure2]
+      assert Failures.list_failures(Failures.within_timeframe()) == [failure, failure2]
     end
 
     test "get_failure!/1 returns the failure with given id" do

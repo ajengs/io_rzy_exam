@@ -91,7 +91,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 403, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:error, %{body: resp_body, status_code: 403}} ==
+      assert {:error, "forbidden"} ==
                Razoyo.post_operations(%{}, @access_token)
     end
 
@@ -164,7 +164,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.authorize(req_body, @account.access_token)
+      assert {:ok, resp_body} == Razoyo.post_operations(req_body, @account.access_token)
     end
 
     test "Authorize should return error when error message not nil" do
@@ -188,7 +188,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
       end)
 
       assert {:error, Map.get(resp_body, "error")} ==
-               Razoyo.authorize(req_body, @account.access_token)
+               Razoyo.post_operations(req_body, @account.access_token)
     end
 
     test "Authorize should return error when checks not empty" do
@@ -218,7 +218,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
       end)
 
       assert {:error, Map.get(resp_body, "checks") |> Jason.encode!()} ==
-               Razoyo.authorize(req_body, @account.access_token)
+               Razoyo.post_operations(req_body, @account.access_token)
     end
   end
 end

@@ -21,12 +21,7 @@ defmodule IoRzyExam.Failures do
     Repo.all(Failure)
   end
 
-  def list_failures_within_period do
-    time_window =
-      DateTime.add(DateTime.utc_now(), Application.get_env(:io_rzy_exam, :failure_timeframe) * -1)
-
-    query = from f in Failure, where: f.updated_at > ^time_window
-
+  def list_failures(query) do
     Repo.all(query)
   end
 
@@ -109,5 +104,12 @@ defmodule IoRzyExam.Failures do
   """
   def change_failure(%Failure{} = failure, attrs \\ %{}) do
     Failure.changeset(failure, attrs)
+  end
+
+  def within_timeframe do
+    time_window =
+      DateTime.add(DateTime.utc_now(), Application.get_env(:io_rzy_exam, :failure_timeframe) * -1)
+
+    from(f in Failure, where: f.updated_at > ^time_window)
   end
 end

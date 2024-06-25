@@ -13,10 +13,16 @@ defmodule IoRzyExam.Client.Razoyo do
     )
   end
 
-  def authorize(request_body, access_token) do
-    res =
-      post_operations(request_body, access_token)
+  def post_operations(request_body, access_token) do
+    HttpClient.post(
+      host_url() <> "/operations",
+      Jason.encode!(request_body),
+      [{"Authorization", "Bearer " <> access_token}]
+    )
+    |> render_response
+  end
 
+  defp render_response(res) do
     Logger.debug(inspect(res))
 
     case res do
@@ -36,14 +42,6 @@ defmodule IoRzyExam.Client.Razoyo do
       _ ->
         res
     end
-  end
-
-  def post_operations(request_body, access_token) do
-    HttpClient.post(
-      host_url() <> "/operations",
-      Jason.encode!(request_body),
-      [{"Authorization", "Bearer " <> access_token}]
-    )
   end
 
   defp client_secret do

@@ -17,13 +17,11 @@ defmodule IoRzyExam.Accounts do
       [%Account{}, ...]
 
   """
-  def list_accounts(owner \\ false) do
-    query =
-      from a in Account,
-        where:
-          a.status ==
-            ^owner
+  def list_accounts() do
+    Repo.all(Account)
+  end
 
+  def list_accounts(query) do
     Repo.all(query)
   end
 
@@ -107,5 +105,15 @@ defmodule IoRzyExam.Accounts do
   """
   def change_account(%Account{} = account, attrs \\ %{}) do
     Account.changeset(account, attrs)
+  end
+
+  def source_accounts do
+    from a in Account,
+      where: a.status == false
+  end
+
+  def authorized_accounts do
+    from a in Account,
+      where: a.status == false and not is_nil(a.secret)
   end
 end

@@ -19,6 +19,7 @@ defmodule IoRzyExamWeb.Router do
 
     get "/", PageController, :home
     resources "/accounts", AccountController, only: [:index, :edit, :update]
+    post "/transfers", AccountController, :transfer
   end
 
   # Other scopes may use custom stacks.
