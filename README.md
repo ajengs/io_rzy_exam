@@ -1,6 +1,5 @@
 # Razoyo Full stack developer exam
 
-
 ## How to run the application
 
 You will need the following installed:
@@ -15,7 +14,9 @@ You will need the following installed:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-> NOTE: `mix setup` will also create new account on Banking API and seed the data based on the new account.
+> NOTE: 
+> `mix setup` will create **new account** on Banking API and seed the data **based on the newly created account**.
+> `mix run priv/repo/seeds.exs` will always reset the data and seed it with **newly created account**.
 
 ## How to test
   * Run `mix test --trace`
