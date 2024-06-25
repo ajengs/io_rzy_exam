@@ -10,7 +10,7 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias IoRzyExam.Client.Razoyo
-alias IoRzyExam.{Accounts, Failures, Transactions}
+alias IoRzyExam.{Accounts, Transactions}
 alias IoRzyExam.Accounts.Account
 alias IoRzyExam.Failures.Failure
 alias IoRzyExam.Repo

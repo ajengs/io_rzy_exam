@@ -27,6 +27,10 @@ config :io_rzy_exam, :razoyo,
   host_url: "localhost",
   client_secret: "client-secret"
 
+config :io_rzy_exam, :words_api,
+  host_url: "localhost",
+  api_key: "api-key"
+
 # In test we don't send emails.
 config :io_rzy_exam, IoRzyExam.Mailer, adapter: Swoosh.Adapters.Test
 

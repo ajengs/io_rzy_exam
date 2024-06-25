@@ -4,6 +4,7 @@ defmodule IoRzyExamWeb.AccountController do
 
   alias IoRzyExam.{Accounts, Failures}
   alias IoRzyExam.Accounts.Account
+  alias IoRzyExam.Client.{Razoyo, Words}
 
   def index(conn, _params) do
     accounts = Accounts.source_accounts() |> Accounts.list_accounts()
@@ -49,7 +50,9 @@ defmodule IoRzyExamWeb.AccountController do
 
       access_token = Enum.at(accounts, 0).access_token
 
-      with {:ok, _} <- IoRzyExam.Client.Razoyo.post_operations(req_body, access_token) do
+      with {:ok, res} <- IoRzyExam.Client.Razoyo.post_operations(req_body, access_token) do
+        Logger.debug(inspect(res))
+
         conn
         |> put_flash(:info, "Funds transferred successfully!")
         |> redirect(to: ~p"/accounts")
@@ -68,10 +71,9 @@ defmodule IoRzyExamWeb.AccountController do
     |> redirect(to: ~p"/accounts")
   end
 
-  defp process_update(:ok, conn, %{"account" => account_params}, account) do
-    req_body = Map.put(account_params, "type", "Authorize")
-
-    with {:ok, auth} <- IoRzyExam.Client.Razoyo.post_operations(req_body, account.access_token) do
+  defp process_update(:ok, conn, %{"account" => %{"secret" => secret} = account_params}, account) do
+    with {:ok, _} <- Words.get_word(secret),
+         {:ok, auth} <- authorize_account(account_params, account) do
       update_params =
         account_params
         |> Map.put("secret", Map.get(auth, "token"))
@@ -89,8 +91,6 @@ defmodule IoRzyExamWeb.AccountController do
       end
     else
       {:error, error} ->
-        Failures.create_failure(%{"account" => account.account})
-
         changeset =
           account
           |> Account.changeset(account_params)
@@ -100,6 +100,19 @@ defmodule IoRzyExamWeb.AccountController do
           account: account,
           changeset: %{changeset | action: :update}
         )
+    end
+  end
+
+  defp authorize_account(account_params, account) do
+    req_body = Map.put(account_params, "type", "Authorize")
+
+    case Razoyo.post_operations(req_body, account.access_token) do
+      {:error, error} ->
+        Failures.create_failure(%{"account" => account.account})
+        {:error, error}
+
+      res ->
+        res
     end
   end
 

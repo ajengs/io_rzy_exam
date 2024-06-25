@@ -37,6 +37,10 @@ config :io_rzy_exam, :razoyo,
   host_url: "https://exam.razoyo.com/api/banking",
   client_secret: "qRIAKP5ywR5i6sGcv3dFbYDEKoUmV5V5"
 
+config :io_rzy_exam, :words_api,
+  host_url: "https://wordsapiv1.p.rapidapi.com/words",
+  api_key: "069d6ea904msh6f232cfbe826ccap1e090ajsnb44c683caa93"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",

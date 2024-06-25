@@ -59,6 +59,11 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
         "error" => nil
       }
 
+      expect(HTTPMock, :get, fn "localhost/secret word", _ ->
+        {:ok,
+         %HTTPoison.Response{status_code: 200, body: Jason.encode!(%{"word" => "secret word"})}}
+      end)
+
       expect(HTTPMock, :post, fn "localhost/operations", ^payload, _account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
@@ -79,12 +84,36 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
         "checks" => []
       }
 
+      expect(HTTPMock, :get, fn "localhost/secret word", _ ->
+        {:ok,
+         %HTTPoison.Response{status_code: 200, body: Jason.encode!(%{"word" => "secret word"})}}
+      end)
+
       expect(HTTPMock, :post, fn "localhost/operations", _payload, _account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
       conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "secret word"})
       assert html_response(conn, 200) =~ "routing number invalid"
+    end
+
+    test "renders errors when word is invalid", %{conn: conn, account: account} do
+      resp_body = %{
+        "success" => false,
+        "message" => "word not found"
+      }
+
+      expect(HTTPMock, :get, fn "localhost/abcde", _ ->
+        {:ok, %HTTPoison.Response{status_code: 404, body: Jason.encode!(resp_body)}}
+      end)
+
+      conn = put(conn, ~p"/accounts/#{account}", account: %{secret: "abcde"})
+      assert html_response(conn, 200) =~ "word not found"
+    end
+
+    test "renders errors when word is empty", %{conn: conn, account: account} do
+      conn = put(conn, ~p"/accounts/#{account}", account: %{secret: ""})
+      assert html_response(conn, 200) =~ "Word cannot be empty"
     end
 
     test "cannot update if failures > 3", %{conn: conn, account: account} do

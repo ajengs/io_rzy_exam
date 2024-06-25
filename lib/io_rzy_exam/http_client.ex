@@ -10,6 +10,14 @@ defmodule IoRzyExam.HttpClient do
     |> process_response_body()
   end
 
+  def get(url, headers \\ []) do
+    Logger.debug("Sending request to #{url}")
+
+    url
+    |> http_client().get(headers ++ @headers)
+    |> process_response_body()
+  end
+
   defp process_response_body({:ok, %HTTPoison.Response{status_code: status_code, body: body}})
        when status_code in [200, 201, 202, 204],
        do: {:ok, parse_body(body)}
