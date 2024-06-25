@@ -11,6 +11,7 @@ defmodule IoRzyExam.Accounts.Account do
     field :hint, :string
     field :secret, :string
     field :amount, :decimal
+    field :transferred, :boolean, default: false
 
     timestamps(type: :utc_datetime)
   end
@@ -26,7 +27,8 @@ defmodule IoRzyExam.Accounts.Account do
       :routing,
       :hint,
       :secret,
-      :amount
+      :amount,
+      :transferred
     ])
     |> validate_required([:account, :access_token, :status])
   end

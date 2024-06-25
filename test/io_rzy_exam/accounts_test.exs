@@ -25,6 +25,15 @@ defmodule IoRzyExam.AccountsTest do
       _account = account_fixture()
       _account2 = account_fixture(%{account: "account 2", status: false})
       account3 = account_fixture(%{account: "account 3", status: false, secret: "secret"})
+
+      _account4 =
+        account_fixture(%{
+          account: "account 4",
+          status: false,
+          secret: "secret",
+          transferred: true
+        })
+
       assert Accounts.list_accounts(Accounts.authorized_accounts()) == [account3]
     end
 

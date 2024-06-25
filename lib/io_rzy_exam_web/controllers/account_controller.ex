@@ -41,20 +41,25 @@ defmodule IoRzyExamWeb.AccountController do
       |> put_flash(:error, "No authorized accounts found!")
       |> redirect(to: ~p"/accounts")
     else
+      total =
+        accounts
+        |> Enum.reduce(Decimal.new(0), fn a, total -> Decimal.add(total, a.amount) end)
+        |> Decimal.to_float()
+
       req_body = %{
         "type" => "Transfer",
         "authorizations" => Enum.map(accounts, fn a -> a.secret end),
-        "total" =>
-          Enum.reduce(accounts, Decimal.new(0), fn a, total -> Decimal.add(total, a.amount) end)
+        "total" => total
       }
 
       access_token = Enum.at(accounts, 0).access_token
 
       with {:ok, res} <- IoRzyExam.Client.Razoyo.post_operations(req_body, access_token) do
         Logger.debug(inspect(res))
+        update_transfer_flag(accounts)
 
         conn
-        |> put_flash(:info, "Funds transferred successfully!")
+        |> put_flash(:info, "Funds transferred successfully! $#{Map.get(res, "total")}")
         |> redirect(to: ~p"/accounts")
       else
         {:error, error} ->
@@ -138,5 +143,11 @@ defmodule IoRzyExamWeb.AccountController do
       failure > 3 -> {:error, "Too many authorization failures. Try again later."}
       true -> :ok
     end
+  end
+
+  defp update_transfer_flag(accounts) do
+    Enum.each(accounts, fn account ->
+      Accounts.update_account(account, %{transferred: true})
+    end)
   end
 end

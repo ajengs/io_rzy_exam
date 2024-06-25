@@ -153,7 +153,7 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
         %{
           "type" => "Transfer",
           "authorizations" => ["secret"],
-          "total" => "100.00"
+          "total" => 100.0
         }
         |> Jason.encode!()
 
@@ -165,10 +165,19 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
       assert html_response(conn, 302)
 
       assert conn.assigns |> Map.get(:flash) |> Map.get("info") ==
-               "Funds transferred successfully!"
+               "Funds transferred successfully! $100"
     end
 
     test "transfer failed if no authorized accounts found", %{conn: conn} do
+      conn = post(conn, ~p"/transfers")
+      assert html_response(conn, 302)
+
+      assert conn.assigns |> Map.get(:flash) |> Map.get("error") ==
+               "No authorized accounts found!"
+    end
+
+    test "transfer failed if all authorized accounts already transferred", %{conn: conn} do
+      account_fixture(%{status: false, secret: "secret", amount: "100", transferred: true})
       conn = post(conn, ~p"/transfers")
       assert html_response(conn, 302)
 

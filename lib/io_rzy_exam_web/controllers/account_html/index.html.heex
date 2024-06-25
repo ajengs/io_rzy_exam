@@ -9,9 +9,11 @@
 
 <.table id="accounts" rows={@accounts}>
   <:col :let={account} label="Account Number"><%= account.account %></:col>
-  <:col :let={account} label="State"><%= account.state %></:col>
   <:col :let={account} label="Hint"><%= (account.hint || "") <> "__" %></:col>
-  <:col :let={account} label="Secret"><%= account.secret %></:col>
+  <:col :let={account} label="Authorized">
+    <%= !is_nil(account.secret) and !account.transferred %>
+  </:col>
+  <:col :let={account} label="Transferred"><%= account.transferred %></:col>
 
   <:action :let={account}>
     <.link navigate={~p"/accounts/#{account}/edit"}>Update secret</.link>

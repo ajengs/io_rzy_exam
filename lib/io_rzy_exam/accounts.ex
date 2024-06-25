@@ -114,6 +114,6 @@ defmodule IoRzyExam.Accounts do
 
   def authorized_accounts do
     from a in Account,
-      where: a.status == false and not is_nil(a.secret)
+      where: a.status == false and not is_nil(a.secret) and a.transferred == false
   end
 end
