@@ -4,19 +4,23 @@ defmodule IoRzyExam.AccountsFixtures do
   entities via the `IoRzyExam.Accounts` context.
   """
 
+  def dummy_account do
+    %{
+      access_token: "some access_token",
+      account: "some account",
+      routing: "some routing",
+      state: "some state",
+      status: true
+    }
+  end
+
   @doc """
   Generate a account.
   """
   def account_fixture(attrs \\ %{}) do
     {:ok, account} =
-      attrs
-      |> Enum.into(%{
-        access_token: "some access_token",
-        account: "some account",
-        routing: "some routing",
-        state: "some state",
-        status: true
-      })
+      dummy_account()
+      |> Map.merge(attrs)
       |> IoRzyExam.Accounts.create_account()
 
     account

@@ -59,9 +59,10 @@ defmodule IoRzyExam.Client.RazoyoTest do
     end
   end
 
-  describe "list_transactions/1" do
-    test "should pass a proper arguments and return correct response" do
-      payload = %{"type" => "ListTransactions"} |> Jason.encode!()
+  describe "post_operations/2" do
+    test "ListTransactionsshould pass a proper arguments and return correct response" do
+      req_body = %{"type" => "ListTransactions"}
+      payload = Jason.encode!(req_body)
 
       resp_body = %{
         "transactions" => [
@@ -78,7 +79,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.list_transactions(@access_token)
+      assert {:ok, resp_body} == Razoyo.post_operations(req_body, @access_token)
     end
 
     test "should return error with html code on failed request" do
@@ -91,7 +92,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
       end)
 
       assert {:error, %{body: resp_body, status_code: 403}} ==
-               Razoyo.list_transactions(@access_token)
+               Razoyo.post_operations(%{}, @access_token)
     end
 
     test "should return error on failed request" do
@@ -99,13 +100,12 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
       expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
 
-      assert Razoyo.list_transactions(@access_token) == resp_body
+      assert Razoyo.post_operations(%{}, @access_token) == resp_body
     end
-  end
 
-  describe "get_account/1" do
-    test "should pass a proper arguments and return correct response" do
-      payload = %{"type" => "GetAccount", "account" => @account.account} |> Jason.encode!()
+    test "GetAccount should pass a proper arguments and return correct response" do
+      req_body = %{"type" => "GetAccount", "account" => @account.account}
+      payload = Jason.encode!(req_body)
 
       resp_body = %{
         "account" => %{
@@ -122,13 +122,12 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.get_account(@account)
+      assert {:ok, resp_body} == Razoyo.post_operations(req_body, @account.access_token)
     end
-  end
 
-  describe "get_routing/1" do
-    test "should pass a proper arguments and return correct response" do
-      payload = %{"type" => "GetRouting", "state" => @account.state} |> Jason.encode!()
+    test "GetRouting should pass a proper arguments and return correct response" do
+      req_body = %{"type" => "GetRouting", "state" => @account.state}
+      payload = Jason.encode!(req_body)
 
       resp_body = %{
         "routing_number" => "routing-number"
@@ -138,43 +137,46 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.get_routing(@account)
+      assert {:ok, resp_body} == Razoyo.post_operations(req_body, @account.access_token)
     end
-  end
 
-  describe "authorize/2" do
-    test "should pass a proper arguments and return correct response" do
-      payload =
+    test "Authorize should pass a proper arguments and return correct response" do
+      req_body =
         %{
           "type" => "Authorize",
           "routing" => @account.routing,
           "account" => @transaction.account,
           "secret" => @transaction.secret
         }
-        |> Jason.encode!()
+
+      payload = Jason.encode!(req_body)
 
       resp_body = %{
         "token" => "authorized-token",
         "total" => 100.00,
-        "error" => nil
+        "error" => nil,
+        "checks" => [
+          %{"letter" => "w", "match" => "exact"}
+        ]
       }
 
       expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:ok, resp_body} == Razoyo.authorize(@account, @transaction)
+      assert {:ok, resp_body} == Razoyo.authorize(req_body, @account.access_token)
     end
 
-    test "should return error when error message not nil" do
-      payload =
+    test "Authorize should return error when error message not nil" do
+      req_body =
         %{
           "type" => "Authorize",
           "routing" => @account.routing,
           "account" => @transaction.account,
           "secret" => @transaction.secret
         }
-        |> Jason.encode!()
+
+      payload = Jason.encode!(req_body)
 
       resp_body = %{
         "error" => "routing number invalid",
@@ -185,7 +187,38 @@ defmodule IoRzyExam.Client.RazoyoTest do
         {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
       end)
 
-      assert {:error, resp_body} == Razoyo.authorize(@account, @transaction)
+      assert {:error, Map.get(resp_body, "error")} ==
+               Razoyo.authorize(req_body, @account.access_token)
+    end
+
+    test "Authorize should return error when checks not empty" do
+      req_body =
+        %{
+          "type" => "Authorize",
+          "routing" => @account.routing,
+          "account" => @transaction.account,
+          "secret" => @transaction.secret
+        }
+
+      payload = Jason.encode!(req_body)
+
+      resp_body = %{
+        "error" => "secret invalid",
+        "checks" => [
+          %{"letter" => "w", "match" => "exact"},
+          %{"letter" => "h", "match" => "exact"},
+          %{"letter" => "i", "match" => "exact"},
+          %{"letter" => "p", "match" => "none"},
+          %{"letter" => "s", "match" => "none"}
+        ]
+      }
+
+      expect(HTTPMock, :post, fn "localhost/operations", ^payload, @account_headers ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(resp_body)}}
+      end)
+
+      assert {:error, Map.get(resp_body, "checks") |> Jason.encode!()} ==
+               Razoyo.authorize(req_body, @account.access_token)
     end
   end
 end

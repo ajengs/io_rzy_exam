@@ -17,8 +17,14 @@ defmodule IoRzyExam.Accounts do
       [%Account{}, ...]
 
   """
-  def list_accounts do
-    Repo.all(Account)
+  def list_accounts(owner \\ false) do
+    query =
+      from a in Account,
+        where:
+          a.status ==
+            ^owner
+
+    Repo.all(query)
   end
 
   @doc """

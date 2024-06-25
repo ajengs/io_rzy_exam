@@ -9,9 +9,16 @@ defmodule IoRzyExam.AccountsTest do
   describe "accounts" do
     @invalid_attrs %{status: nil, state: nil, account: nil, access_token: nil, routing: nil}
 
-    test "list_accounts/0 returns all accounts" do
+    test "list_accounts/0 returns all accounts except owner account" do
+      _account = account_fixture()
+      account2 = account_fixture(%{account: "account 2", status: false})
+      assert Accounts.list_accounts() == [account2]
+    end
+
+    test "list_accounts/1 returns owner accounts" do
       account = account_fixture()
-      assert Accounts.list_accounts() == [account]
+      _account2 = account_fixture(%{account: "account 2", status: false})
+      assert Accounts.list_accounts(true) == [account]
     end
 
     test "get_account!/1 returns the account with given id" do

@@ -15,27 +15,67 @@ alias IoRzyExam.Accounts.Account
 alias IoRzyExam.Repo
 alias IoRzyExam.Transactions.Transaction
 
+defmodule IoRzyExam.Seeder do
+  def insert_account(account_data, owner \\ false) do
+    account_request = %{
+      "type" => "GetAccount",
+      "account" => Map.get(account_data, "account")
+    }
+
+    {:ok, %{"account" => %{"state" => state, "hint" => hint}}} =
+      Razoyo.post_operations(account_request, Map.get(account_data, "access_token"))
+
+    first_three =
+      Base.decode64!(hint) |> String.replace("Starts with ", "") |> String.replace("__", "")
+
+    routing_request = %{
+      "type" => "GetRouting",
+      "state" => state
+    }
+
+    {:ok, %{"routing_number" => routing}} =
+      Razoyo.post_operations(routing_request, Map.get(account_data, "access_token"))
+
+    account_data
+    |> Map.put("state", state)
+    |> Map.put("hint", first_three)
+    |> Map.put("routing", routing)
+    |> Map.put("state", state)
+    |> Map.put("status", owner)
+    |> Accounts.create_account()
+  end
+
+  def create_new_account do
+    {:ok, account_data} = Razoyo.create_account()
+    insert_account(account_data, true)
+  end
+
+  def insert_transactions(account) do
+    {:ok, %{"transactions" => transaction_data}} =
+      Razoyo.post_operations(%{"type" => "ListTransactions"}, account.access_token)
+
+    Enum.each(transaction_data, fn transaction ->
+      transaction
+      |> Map.put("account_id", account.account)
+      |> Transactions.create_transaction()
+    end)
+  end
+
+  def insert_trx_accounts(access_token) do
+    Transactions.list_transactions()
+    |> Enum.map(fn trx -> trx.account end)
+    |> Enum.uniq()
+    |> Enum.each(fn account ->
+      %{"account" => account, "access_token" => access_token}
+      |> insert_account()
+
+      :timer.sleep(500)
+    end)
+  end
+end
+
 Repo.delete_all(Transaction)
 Repo.delete_all(Account)
-
-create_transactions = fn account_id, data ->
-  Enum.map(data, fn transaction ->
-    transaction
-    |> Map.put("account_id", account_id)
-    |> Transactions.create_transaction()
-  end)
-end
-
-with {:ok, account_data} <- Razoyo.create_account(),
-     {:ok, initial_account} <- Accounts.create_account(account_data),
-     {:ok, %{"account" => state}} <- Razoyo.get_account(initial_account),
-     {:ok, account_state} <- Accounts.update_account(initial_account, state),
-     {:ok, %{"routing_number" => routing}} <- Razoyo.get_routing(account_state),
-     {:ok, account} <- Accounts.update_account(account_state, %{"routing" => routing}),
-     {:ok, %{"transactions" => transaction_data}} <-
-       Razoyo.list_transactions(account.access_token) do
-  create_transactions.(account.account, transaction_data)
-  IO.puts("SUCCESS: " <> inspect(account))
-else
-  err -> IO.puts("ERROR: " <> inspect(err))
-end
+{:ok, account} = IoRzyExam.Seeder.create_new_account()
+IoRzyExam.Seeder.insert_transactions(account)
+IoRzyExam.Seeder.insert_trx_accounts(account.access_token)
