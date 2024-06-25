@@ -46,7 +46,7 @@ defmodule IoRzyExam.Client.WordsTest do
 
       expect(HTTPMock, :get, fn "localhost/hello", _ -> resp_body end)
 
-      assert Words.get_word("hello") == resp_body
+      assert Words.get_word("hello") == {:error, "nxdomain"}
     end
 
     test "should return error without sending request if word is null" do

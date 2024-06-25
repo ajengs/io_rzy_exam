@@ -17,7 +17,7 @@ defmodule IoRzyExamWeb.Router do
   scope "/", IoRzyExamWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", AccountController, :index
     resources "/accounts", AccountController, only: [:index, :edit, :update]
     post "/transfers", AccountController, :transfer
   end

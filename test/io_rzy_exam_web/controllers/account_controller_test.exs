@@ -18,7 +18,7 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
 
     test "renders form for editing chosen account", %{conn: conn, account: account} do
       conn = get(conn, ~p"/accounts/#{account}/edit")
-      assert html_response(conn, 200) =~ "Update secret"
+      assert html_response(conn, 200) =~ "Authorize Account"
     end
 
     test "cannot edit if failures > 3", %{conn: conn, account: account} do
@@ -137,7 +137,7 @@ defmodule IoRzyExamWeb.AccountsControllerTest do
 
     test "renders errors when submitted data is invalid", %{conn: conn, account: account} do
       conn = put(conn, ~p"/accounts/#{account}", account: %{account: ""})
-      assert html_response(conn, 200) =~ "Update secret"
+      assert html_response(conn, 200) =~ "Authorize Account"
     end
   end
 

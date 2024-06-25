@@ -55,7 +55,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
       expect(HTTPMock, :post, fn "localhost/accounts", _, _ -> resp_body end)
 
-      assert Razoyo.create_account() == resp_body
+      assert Razoyo.create_account() == {:error, "nxdomain"}
     end
   end
 
@@ -100,7 +100,7 @@ defmodule IoRzyExam.Client.RazoyoTest do
 
       expect(HTTPMock, :post, fn "localhost/operations", _, _ -> resp_body end)
 
-      assert Razoyo.post_operations(%{}, @access_token) == resp_body
+      assert Razoyo.post_operations(%{}, @access_token) == {:error, "nxdomain"}
     end
 
     test "GetAccount should pass a proper arguments and return correct response" do

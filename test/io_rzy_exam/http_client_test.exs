@@ -27,7 +27,7 @@ defmodule IoRzyExam.HttpClientTest do
 
       expect(HTTPMock, :post, fn _, _, _ -> error end)
 
-      assert ^error = HttpClient.post("url", "payload")
+      assert HttpClient.post("url", "payload") == {:error, "nxdomain"}
     end
 
     test "should return simple HTTPoison.Error" do

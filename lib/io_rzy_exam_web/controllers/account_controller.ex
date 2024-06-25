@@ -41,32 +41,7 @@ defmodule IoRzyExamWeb.AccountController do
       |> put_flash(:error, "No authorized accounts found!")
       |> redirect(to: ~p"/accounts")
     else
-      total =
-        accounts
-        |> Enum.reduce(Decimal.new(0), fn a, total -> Decimal.add(total, a.amount) end)
-        |> Decimal.to_float()
-
-      req_body = %{
-        "type" => "Transfer",
-        "authorizations" => Enum.map(accounts, fn a -> a.secret end),
-        "total" => total
-      }
-
-      access_token = Enum.at(accounts, 0).access_token
-
-      with {:ok, res} <- IoRzyExam.Client.Razoyo.post_operations(req_body, access_token) do
-        Logger.debug(inspect(res))
-        update_transfer_flag(accounts)
-
-        conn
-        |> put_flash(:info, "Funds transferred successfully! $#{Map.get(res, "total")}")
-        |> redirect(to: ~p"/accounts")
-      else
-        {:error, error} ->
-          conn
-          |> put_flash(:error, error)
-          |> redirect(to: ~p"/accounts")
-      end
+      process_transfer(conn, accounts)
     end
   end
 
@@ -78,23 +53,16 @@ defmodule IoRzyExamWeb.AccountController do
 
   defp process_update(:ok, conn, %{"account" => %{"secret" => secret} = account_params}, account) do
     with {:ok, _} <- Words.get_word(secret),
-         {:ok, auth} <- authorize_account(account_params, account) do
-      update_params =
-        account_params
-        |> Map.put("secret", Map.get(auth, "token"))
-        |> Map.put("amount", Map.get(auth, "amount"))
-
-      case Accounts.update_account(account, update_params) do
-        {:ok, _account} ->
-          conn
-          |> put_flash(:info, "account updated successfully.")
-          |> redirect(to: ~p"/accounts")
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          Logger.debug(inspect(changeset))
-          render(conn, :edit, account: account, changeset: changeset)
-      end
+         {:ok, auth} <- authorize_account(account_params, account),
+         {:ok, _account} <- update_account(account, account_params, auth) do
+      conn
+      |> put_flash(:info, "account updated successfully.")
+      |> redirect(to: ~p"/accounts")
     else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Logger.debug(inspect(changeset))
+        render(conn, :edit, account: account, changeset: changeset)
+
       {:error, error} ->
         changeset =
           account
@@ -108,16 +76,41 @@ defmodule IoRzyExamWeb.AccountController do
     end
   end
 
-  defp authorize_account(account_params, account) do
-    req_body = Map.put(account_params, "type", "Authorize")
+  defp update_account(account, account_params, auth) do
+    update_params =
+      account_params
+      |> Map.put("secret", Map.get(auth, "token"))
+      |> Map.put("amount", Map.get(auth, "amount"))
 
-    case Razoyo.post_operations(req_body, account.access_token) do
+    Accounts.update_account(account, update_params)
+  end
+
+  defp process_transfer(conn, accounts) do
+    total =
+      accounts
+      |> Enum.reduce(Decimal.new(0), fn a, total -> Decimal.add(total, a.amount) end)
+      |> Decimal.to_float()
+
+    req_body = %{
+      "type" => "Transfer",
+      "authorizations" => Enum.map(accounts, fn a -> a.secret end),
+      "total" => total
+    }
+
+    access_token = Enum.at(accounts, 0).access_token
+
+    with {:ok, res} <- IoRzyExam.Client.Razoyo.post_operations(req_body, access_token) do
+      Logger.debug(inspect(res))
+      update_transfer_flag(accounts)
+
+      conn
+      |> put_flash(:info, "Funds transferred successfully! $#{Map.get(res, "total")}")
+      |> redirect(to: ~p"/accounts")
+    else
       {:error, error} ->
-        Failures.create_failure(%{"account" => account.account})
-        {:error, error}
-
-      res ->
-        res
+        conn
+        |> put_flash(:error, error)
+        |> redirect(to: ~p"/accounts")
     end
   end
 
@@ -130,6 +123,19 @@ defmodule IoRzyExamWeb.AccountController do
   defp show_edit(:ok, conn, account) do
     changeset = Accounts.change_account(account)
     render(conn, :edit, account: account, changeset: changeset)
+  end
+
+  defp authorize_account(account_params, account) do
+    req_body = Map.put(account_params, "type", "Authorize")
+
+    case Razoyo.post_operations(req_body, account.access_token) do
+      {:error, error} ->
+        Failures.create_failure(%{"account" => account.account})
+        {:error, error}
+
+      res ->
+        res
+    end
   end
 
   defp check_secret(:ok, %_{secret: secret}) when is_nil(secret), do: :ok

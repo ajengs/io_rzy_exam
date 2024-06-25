@@ -38,6 +38,9 @@ defmodule IoRzyExam.HttpClient do
   defp process_response_body({:error, %HTTPoison.Error{reason: reason}}),
     do: {:error, reason}
 
+  defp process_response_body({:error, reason}) when is_atom(reason),
+    do: {:error, Atom.to_string(reason)}
+
   defp process_response_body({:error, reason}),
     do: {:error, reason}
 

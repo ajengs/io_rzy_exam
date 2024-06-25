@@ -1,16 +1,16 @@
 <.header>
-  Update secret <%= @account.account %>
+  Authorize Account
 </.header>
 
 <.simple_form :let={f} for={@changeset} action={~p"/accounts/#{@account}"}>
   <.error :if={@changeset.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
-  <.input field={f[:secret]} type="text" label="Secret" maxlength="5" value={@account.hint} />
-  <.input field={f[:account]} />
-  <.input field={f[:routing]} />
+  <.input field={f[:account]} disabled style="background-color:#eee;color:#000;padding: 1rem;" />
+  <.input field={f[:routing]} disabled style="background-color:#eee;color:#000;padding: 1rem;" />
+  <.input field={f[:secret]} type="text" label="Secret word" maxlength="5" value={@account.hint} />
   <:actions>
-    <.button>Update secret</.button>
+    <.button>Authorize!</.button>
   </:actions>
 </.simple_form>
 
